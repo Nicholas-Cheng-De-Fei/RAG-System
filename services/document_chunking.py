@@ -5,6 +5,9 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pathlib import Path
 import time
 from utils.logger import log
+from utils.utils import get_envvar
+
+ENV_HUGGINGFACE_EMBEDDING_MODEL = "HUGGINGFACE_EMBEDDING_MODEL"
 
 def read_pdf_document(document_path: str) -> list:
     """
@@ -45,7 +48,7 @@ def native_chunking(documents: list) -> list:
     base_chunks = splitter.split_documents(documents)
 
     end = time.perf_counter()
-    print(f"Chunking process completed, took {end - start:.4f} seconds")
+    log.info(f"Chunking process completed, took {end - start:.4f} seconds")
     
     return base_chunks
 
@@ -53,5 +56,6 @@ def get_embedding_model() -> HuggingFaceEmbeddings:
     """
     Returns the embedding model.
     """
-    embeddings = HuggingFaceEmbeddings(model_name="nomic-ai/modernbert-embed-base")
+    huggingface_embedding_model = get_envvar(ENV_HUGGINGFACE_EMBEDDING_MODEL)
+    embeddings = HuggingFaceEmbeddings(model_name=huggingface_embedding_model)
     return embeddings

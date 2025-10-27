@@ -32,4 +32,11 @@ def embed_and_add_document(documents: list, chroma_db: Chroma) -> None:
     chroma_db.add_documents(documents)
     
     end = time.perf_counter()
-    print(f"Embedding process completed and has been stored into chroma database, took {end - start:.4f} seconds")
+    log.info(f"Embedding process completed and has been stored into chroma database, took {end - start:.4f} seconds")
+
+def retrieve(query: str, chroma_db: Chroma, k: int = 10):
+    """
+    Retrieves the top k most relevent documents based on the query.
+    """
+    retrieved_docs = chroma_db.similarity_search(query, k = k)
+    return {"context": retrieved_docs}
