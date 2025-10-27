@@ -26,7 +26,7 @@ def read_pdf_document(document_path: str) -> list:
         loader = PyPDFLoader(str(path))
         return loader.load()
     except ValueError as value_err:
-        log.error(f"File path {document_path} is invalid or the file cannot be found.")
+        log.error(f"File path {document_path} is invalid or the file cannot be found")
         raise HTTPException(status_code=400, detail="Invalid file path or file cannot be found")
     
 def native_chunking(documents: list) -> list:
@@ -42,7 +42,7 @@ def native_chunking(documents: list) -> list:
         chunk_overlap=200,
         separators=["\n\n", "\n", " ", "."],
     )
-    log.info("Chunking process has begun.")
+    log.info("Chunking process has begun")
     start = time.perf_counter()
 
     base_chunks = splitter.split_documents(documents)
