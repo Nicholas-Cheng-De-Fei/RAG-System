@@ -27,6 +27,7 @@ def retrieve_and_query_ai_model(request: QueryRequest, google_ai: ChatGoogleGene
     """
     Retrieves relevant documents and dends it as context to the model
     """
+    print(request.query)
     context = retrieve(request.query, chroma_db)
 
     query_with_context = f"Context:\n{context['context']}\n\nQuestion:\n{request.query}"

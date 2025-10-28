@@ -1,7 +1,7 @@
 from controllers.app_controller import chunk_document, query_ai_model, retrieve_and_query_ai_model
 from fastapi import FastAPI
 from models.app_models import DocumentProcessRequest, QueryRequest
-from services.chroma_db_service import connect_to_chroma_db, disconnect_chroma_db
+from services.chroma_db_service import connect_to_chroma_db, disconnect_chroma_db, get_document_count
 from services.query_service import connect_to_google_ai
 from utils.logger import log
 
@@ -34,6 +34,7 @@ async def chunk_pdf_document(process_request: DocumentProcessRequest) -> dict:
     Takes in a PDF document locally and chunks it.
     """
     chunk_document(process_request, app.state.chroma_db)
+    get_document_count(app.state.chroma_db)
     return {"message": "Document has been chunked"}
 
 @app.post("/ask")
