@@ -1,0 +1,21 @@
+[project]
+name = "Study-Buddy"
+version = "0.1.0"
+description = "A notebook LLM to help students in their studies"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.120.0",
+    "langchain>=1.0.2",
+    "langchain-chroma>=1.0.0",
+    "langchain-community>=0.4",
+    "langchain-google-genai>=3.0.0",
+    "langchain-huggingface>=1.0.0",
+    "langchain-text-splitters>=1.0.0",
+    "pydantic>=2.12.3",
+    "pydantic-ai>=1.6.0",
+    "pypdf>=6.1.3",
+    "python-dotenv>=1.1.1",
+    "sentence-transformers>=5.1.2",
+    "typing>=3.10.0.0",
+]
