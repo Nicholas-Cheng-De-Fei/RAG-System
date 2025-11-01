@@ -34,7 +34,6 @@ async def chunk_pdf_document(process_request: DocumentProcessRequest) -> dict:
     Takes in a PDF document locally and chunks it.
     """
     chunk_document(process_request, app.state.chroma_db)
-    get_document_count(app.state.chroma_db)
     return {"message": "Document has been chunked"}
 
 @app.post("/ask")
