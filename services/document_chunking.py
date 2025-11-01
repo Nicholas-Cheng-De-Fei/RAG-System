@@ -38,8 +38,8 @@ def native_chunking(documents: list) -> list:
     Returns a list of documents but are smaller in text length than the original document list.
     """
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
+        chunk_size=512,
+        chunk_overlap=50,
         separators=["\n\n", "\n", " ", "."],
     )
     log.info("Chunking process has begun")

@@ -38,7 +38,9 @@ def retrieve(query: str, chroma_db: Chroma, k: int = 10) -> dict:
     """
     Retrieves the top k most relevent documents based on the query.
     """
-    retrieved_docs = chroma_db.similarity_search(query, k = k)
+    retrieved_docs_with_scores = chroma_db.similarity_search_with_score(query, k=k)
+
+    retrieved_docs = [doc for doc, score in retrieved_docs_with_scores if score <= 0.50]
     
     if not retrieved_docs:
         print("no")
