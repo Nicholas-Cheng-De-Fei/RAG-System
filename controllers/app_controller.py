@@ -33,6 +33,7 @@ def retrieve_and_query_ai_model(request: QueryRequest, google_ai: ChatGoogleGene
     
     context = multi_retrieve(queries, chroma_db)
 
+
     query_with_context = f"Context:\n{context['context']}\n\nQuestion:\n{request.query}"
 
     return query_google_ai(query_with_context, google_ai)

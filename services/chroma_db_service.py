@@ -12,7 +12,7 @@ def connect_to_chroma_db() -> Chroma:
         embedding_function= get_embedding_model(),
         persist_directory="./data/chroma_langchain_db",  # Where to save data locally, remove if not necessary
     )
-    log.info("Connected to chroma DB")
+    log.info("INFO: Connected to chroma DB")
 
     return vector_store
 
@@ -26,25 +26,27 @@ def embed_and_add_document(documents: list, chroma_db: Chroma) -> None:
     """
     Embeds the documents and adds it into chroma database.
     """
-    log.info("Embedding process has begun")
+    log.info("INFO: Embedding process has begun")
     start = time.perf_counter()
 
     chroma_db.add_documents(documents)
     
     end = time.perf_counter()
-    log.info(f"Embedding process completed and has been stored into chroma database, took {end - start:.4f} seconds")
+    log.info(f"INFO: Embedding process completed and has been stored into chroma database, took {end - start:.4f} seconds")
 
 def retrieve(query: str, chroma_db: Chroma, k: int = 10) -> dict:
     """
     Retrieves the top k most relevent documents based on the query.
     """
-    retrieved_docs = chroma_db.similarity_search(query, k = k)
+    retrieved_docs_with_scores = chroma_db.similarity_search_with_score(query, k=k)
+
+    retrieved_docs = [doc for doc, score in retrieved_docs_with_scores if score <= 0.50]
     
+    log.info(f"INFO: Retrieved {len(retrieved_docs)} documents")
+
     if not retrieved_docs:
-        print("no")
         return {"context": "No relevant documents found"}
     else:
-        print(len(retrieved_docs))
         return {"context": "\n\n".join(getattr(doc, "page_content", str(doc)) for doc in retrieved_docs)}
 
 def get_document_count(chroma_db: Chroma) -> int:
