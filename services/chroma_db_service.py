@@ -48,3 +48,18 @@ def retrieve(query: str, chroma_db: Chroma, k: int = 10) -> dict:
     else:
         print(len(retrieved_docs))
         return {"context": "\n\n".join(getattr(doc, "page_content", str(doc)) for doc in retrieved_docs)}
+    
+def get_document_count(chroma_db: Chroma) -> int:
+    try:
+        collection = chroma_db._collection
+        count = collection.count()
+        
+        print(f"Total documents in collection {collection.name} is {count}")
+        return count
+    except AttributeError:
+        log.error("Failed to access Chroma collection count. Ensure the Chroma object is correctly initialized.")
+        return 0
+    except Exception as e:
+        print(f"error in getting document count: {e}")
+        return 0
+        
