@@ -34,18 +34,16 @@ def embed_and_add_document(documents: list, chroma_db: Chroma) -> None:
     end = time.perf_counter()
     log.info(f"INFO: Embedding process completed and has been stored into chroma database, took {end - start:.4f} seconds")
 
-def retrieve(query: str, chroma_db: Chroma, k: int = 10) -> dict:
+def retrieve(query: str, chroma_db: Chroma, k: int = 20) -> dict:
     """
     Retrieves the top k most relevent documents based on the query.
     """
     retrieved_docs_with_scores = chroma_db.similarity_search_with_score(query, k=k)
 
-    retrieved_docs = [doc for doc, score in retrieved_docs_with_scores if score <= 0.50]
+    retrieved_docs = [doc for doc, score in retrieved_docs_with_scores if score <= 0.6]
     
     log.info(f"INFO: Retrieved {len(retrieved_docs)} documents")
 
-    if not retrieved_docs:
-        return {"context": "No relevant documents found"}
-    else:
-        return {"context": "\n\n".join(getattr(doc, "page_content", str(doc)) for doc in retrieved_docs)}
+    return retrieved_docs
+
         
