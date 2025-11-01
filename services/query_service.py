@@ -33,6 +33,14 @@ SYSTEM_PROMPT = """
     Friendly, approachable, and encouraging — like a helpful tutor.
 """
 
+query_transformation_prompt = '''
+    You are an AI language model assistant. Your task is to generate five 
+    different versions of the given user question to retrieve relevant documents from a vector 
+    database. By generating multiple perspectives on the user question, your goal is to help
+    the user overcome some of the limitations of the distance-based similarity search. 
+    Provide these alternative questions separated by newlines.
+'''
+
 def connect_to_google_ai() -> ChatGoogleGenerativeAI:
     """
     Sets up the google ai model.
@@ -68,3 +76,21 @@ def query_google_ai(query: str, google_ai: ChatGoogleGenerativeAI) -> dict:
     log.info(f"Response received, took {end - start:.4f} seconds")
 
     return {"query" : query, "response": response}
+
+def query_transformation(query:str, google_ai: ChatGoogleGenerativeAI) -> list:
+    messages = [
+        SystemMessage(content = query_transformation_prompt),
+        HumanMessage(content=query)
+    ]
+    
+    log.info("Awaiting query transformation from AI model")
+    start = time.perf_counter()
+    
+    response = google_ai.invoke(messages)
+    
+    end = time.perf_counter()
+    log.info(f"Response received, took {end - start:.4f} seconds")
+    
+    print(response.content.split('\n'))
+    
+    return response.content.split('\n')
