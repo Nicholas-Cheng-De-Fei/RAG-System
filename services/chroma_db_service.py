@@ -48,4 +48,49 @@ def retrieve(query: str, chroma_db: Chroma, k: int = 10) -> dict:
         return {"context": "No relevant documents found"}
     else:
         return {"context": "\n\n".join(getattr(doc, "page_content", str(doc)) for doc in retrieved_docs)}
+
+def get_document_count(chroma_db: Chroma) -> int:
+    try:
+        collection = chroma_db._collection
+        count = collection.count()
         
+        print(f"Total documents in collection {collection.name} is {count}")
+        return count
+    except AttributeError:
+        log.error("Failed to access Chroma collection count. Ensure the Chroma object is correctly initialized.")
+        return 0
+    except Exception as e:
+        print(f"error in getting document count: {e}")
+        return 0
+        
+def multi_retrieve(queries: list, chroma_db: Chroma, k: int = 10) -> dict:
+    """
+    Retrieves the top k most relevent documents based on the query.
+    """
+    # Set of all unique docs for context
+    unique_contexts = set()
+    
+    # For debugging
+    all_retrieved_docs = []
+    
+    for query in queries:
+        retrieved_docs = chroma_db.similarity_search(query, k = k)
+        
+        # Update debugging list
+        all_retrieved_docs.extend(retrieved_docs)
+        
+        # Extract page content
+        for doc in retrieved_docs:
+            content = getattr(doc, "page_content", str(doc))
+            unique_contexts.add(content)
+    
+    # Convert set to list
+    context_list = list(unique_contexts)
+    
+    if not context_list:
+        print("no")
+        return {"context": "No relevant documents found"}
+    else:
+        print(f"Lenght of combined context list: {len(context_list)}")
+        print(f"Total docs collected: {len(all_retrieved_docs)}")
+        return {"context": "\n\n".join(context_list)}
