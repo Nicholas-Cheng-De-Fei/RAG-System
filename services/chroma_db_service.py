@@ -33,23 +33,8 @@ def embed_and_add_document(documents: list, chroma_db: Chroma) -> None:
     
     end = time.perf_counter()
     log.info(f"INFO: Embedding process completed and has been stored into chroma database, took {end - start:.4f} seconds")
-
-def retrieve(query: str, chroma_db: Chroma, k: int = 20) -> dict:
-    """
-    Retrieves the top k most relevent documents based on the query.
-    """
-    retrieved_docs_with_scores = chroma_db.similarity_search_with_score(query, k=k)
-
-    retrieved_docs = [doc for doc, score in retrieved_docs_with_scores if score <= 0.6]
-    
-    log.info(f"INFO: Retrieved {len(retrieved_docs)} documents")
         
-    if not retrieved_docs:
-        return {"context": "No relevant documents found"}
-    else:
-        return {"context": "\n\n".join(getattr(doc, "page_content", str(doc)) for doc in retrieved_docs)}
-        
-def multi_retrieve(queries: list, chroma_db: Chroma, k: int = 10) -> dict:
+def multi_retrieve(queries: list, chroma_db: Chroma, k: int = 20) -> list:
     """
     Retrieves the top k most relevent documents based on the query.
     """
@@ -60,7 +45,8 @@ def multi_retrieve(queries: list, chroma_db: Chroma, k: int = 10) -> dict:
     all_retrieved_docs = []
     
     for query in queries:
-        retrieved_docs = chroma_db.similarity_search(query, k = k)
+        retrieved_docs_with_scores = chroma_db.similarity_search_with_score(query, k=k)
+        retrieved_docs = [doc for doc, score in retrieved_docs_with_scores if score <= 0.6]
         
         # Update debugging list
         all_retrieved_docs.extend(retrieved_docs)
@@ -72,11 +58,7 @@ def multi_retrieve(queries: list, chroma_db: Chroma, k: int = 10) -> dict:
     
     # Convert set to list
     context_list = list(unique_contexts)
+
+    log.info(f"INFO: Retrieved  {len(context_list)} documents")
     
-    if not context_list:
-        print("no")
-        return {"context": "No relevant documents found"}
-    else:
-        print(f"Lenght of combined context list: {len(context_list)}")
-        print(f"Total docs collected: {len(all_retrieved_docs)}")
-        return {"context": "\n\n".join(context_list)}
+    return context_list
