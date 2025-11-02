@@ -43,7 +43,40 @@ def retrieve(query: str, chroma_db: Chroma, k: int = 20) -> dict:
     retrieved_docs = [doc for doc, score in retrieved_docs_with_scores if score <= 0.6]
     
     log.info(f"INFO: Retrieved {len(retrieved_docs)} documents")
-
-    return retrieved_docs
-
         
+    if not retrieved_docs:
+        return {"context": "No relevant documents found"}
+    else:
+        return {"context": "\n\n".join(getattr(doc, "page_content", str(doc)) for doc in retrieved_docs)}
+        
+def multi_retrieve(queries: list, chroma_db: Chroma, k: int = 10) -> dict:
+    """
+    Retrieves the top k most relevent documents based on the query.
+    """
+    # Set of all unique docs for context
+    unique_contexts = set()
+    
+    # For debugging
+    all_retrieved_docs = []
+    
+    for query in queries:
+        retrieved_docs = chroma_db.similarity_search(query, k = k)
+        
+        # Update debugging list
+        all_retrieved_docs.extend(retrieved_docs)
+        
+        # Extract page content
+        for doc in retrieved_docs:
+            content = getattr(doc, "page_content", str(doc))
+            unique_contexts.add(content)
+    
+    # Convert set to list
+    context_list = list(unique_contexts)
+    
+    if not context_list:
+        print("no")
+        return {"context": "No relevant documents found"}
+    else:
+        print(f"Lenght of combined context list: {len(context_list)}")
+        print(f"Total docs collected: {len(all_retrieved_docs)}")
+        return {"context": "\n\n".join(context_list)}

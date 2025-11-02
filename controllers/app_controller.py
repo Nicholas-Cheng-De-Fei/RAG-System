@@ -2,9 +2,10 @@ from langchain_chroma import Chroma
 from langchain_google_genai import ChatGoogleGenerativeAI
 from models.app_models import DocumentProcessRequest, QueryRequest
 from services.document_chunking import read_pdf_document, native_chunking
-from services.chroma_db_service import embed_and_add_document, retrieve
+from services.chroma_db_service import embed_and_add_document, retrieve, multi_retrieve
 from services.query_service import query_google_ai
 from services.reranking import rerank
+from services.query_service import query_google_ai, query_transformation
 
 def chunk_document(process_request: DocumentProcessRequest, chroma_db: Chroma) -> None:
     """
@@ -28,6 +29,7 @@ def retrieve_and_query_ai_model(request: QueryRequest, google_ai: ChatGoogleGene
     """
     Retrieves relevant documents and dends it as context to the model
     """
+<<<<<<< HEAD
     context = retrieve(request.query, chroma_db)
 
     if (context):
@@ -38,5 +40,15 @@ def retrieve_and_query_ai_model(request: QueryRequest, google_ai: ChatGoogleGene
     
     context = "\n\n".join(reranked_context)
     query_with_context = f"Context:\n{context}\n\nQuestion:\n{request.query}"
+=======
+    print(request.query)
+    
+    queries = query_transformation(request.query, google_ai)
+    
+    context = multi_retrieve(queries, chroma_db)
+
+
+    query_with_context = f"Context:\n{context['context']}\n\nQuestion:\n{request.query}"
+>>>>>>> 04e74ceef842b43ca625d24719ccb415b5e38177
 
     return query_google_ai(query_with_context, google_ai)
