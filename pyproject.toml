@@ -5,6 +5,7 @@ description = "A notebook LLM to help students in their studies"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "cohere>=5.20.0",
     "fastapi[standard]>=0.120.0",
     "langchain>=1.0.2",
     "langchain-chroma>=1.0.0",

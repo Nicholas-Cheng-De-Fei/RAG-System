@@ -33,21 +33,35 @@ def embed_and_add_document(documents: list, chroma_db: Chroma) -> None:
     
     end = time.perf_counter()
     log.info(f"INFO: Embedding process completed and has been stored into chroma database, took {end - start:.4f} seconds")
-
-def retrieve(query: str, chroma_db: Chroma, k: int = 10) -> dict:
+        
+def multi_retrieve(queries: list, chroma_db: Chroma, k: int = 20) -> list:
     """
     Retrieves the top k most relevent documents based on the query.
     """
-    retrieved_docs_with_scores = chroma_db.similarity_search_with_score(query, k=k)
-
-    retrieved_docs = [doc for doc, score in retrieved_docs_with_scores if score <= 0.50]
+    # Set of all unique docs for context
+    unique_contexts = set()
     
-    log.info(f"INFO: Retrieved {len(retrieved_docs)} documents")
+    # For debugging
+    all_retrieved_docs = []
+    
+    for query in queries:
+        retrieved_docs_with_scores = chroma_db.similarity_search_with_score(query, k=k)
+        retrieved_docs = [doc for doc, score in retrieved_docs_with_scores if score <= 0.8]
+        
+        # Update debugging list
+        all_retrieved_docs.extend(retrieved_docs)
+        
+        # Extract page content
+        for doc in retrieved_docs:
+            content = getattr(doc, "page_content", str(doc))
+            unique_contexts.add(content)
+    
+    # Convert set to list
+    context_list = list(unique_contexts)
 
-    if not retrieved_docs:
-        return {"context": "No relevant documents found"}
-    else:
-        return {"context": "\n\n".join(getattr(doc, "page_content", str(doc)) for doc in retrieved_docs)}
+    log.info(f"INFO: Retrieved  {len(context_list)} documents")
+    
+    return context_list
 
 def get_document_count(chroma_db: Chroma) -> int:
     try:
@@ -62,35 +76,3 @@ def get_document_count(chroma_db: Chroma) -> int:
     except Exception as e:
         print(f"error in getting document count: {e}")
         return 0
-        
-def multi_retrieve(queries: list, chroma_db: Chroma, k: int = 10) -> dict:
-    """
-    Retrieves the top k most relevent documents based on the query.
-    """
-    # Set of all unique docs for context
-    unique_contexts = set()
-    
-    # For debugging
-    all_retrieved_docs = []
-    
-    for query in queries:
-        retrieved_docs = chroma_db.similarity_search(query, k = k)
-        
-        # Update debugging list
-        all_retrieved_docs.extend(retrieved_docs)
-        
-        # Extract page content
-        for doc in retrieved_docs:
-            content = getattr(doc, "page_content", str(doc))
-            unique_contexts.add(content)
-    
-    # Convert set to list
-    context_list = list(unique_contexts)
-    
-    if not context_list:
-        print("no")
-        return {"context": "No relevant documents found"}
-    else:
-        print(f"Lenght of combined context list: {len(context_list)}")
-        print(f"Total docs collected: {len(all_retrieved_docs)}")
-        return {"context": "\n\n".join(context_list)}
