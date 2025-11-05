@@ -46,7 +46,7 @@ def multi_retrieve(queries: list, chroma_db: Chroma, k: int = 20) -> list:
     
     for query in queries:
         retrieved_docs_with_scores = chroma_db.similarity_search_with_score(query, k=k)
-        retrieved_docs = [doc for doc, score in retrieved_docs_with_scores if score <= 0.6]
+        retrieved_docs = [doc for doc, score in retrieved_docs_with_scores if score <= 0.8]
         
         # Update debugging list
         all_retrieved_docs.extend(retrieved_docs)
@@ -62,3 +62,17 @@ def multi_retrieve(queries: list, chroma_db: Chroma, k: int = 20) -> list:
     log.info(f"INFO: Retrieved  {len(context_list)} documents")
     
     return context_list
+
+def get_document_count(chroma_db: Chroma) -> int:
+    try:
+        collection = chroma_db._collection
+        count = collection.count()
+        
+        print(f"Total documents in collection {collection.name} is {count}")
+        return count
+    except AttributeError:
+        log.error("Failed to access Chroma collection count. Ensure the Chroma object is correctly initialized.")
+        return 0
+    except Exception as e:
+        print(f"error in getting document count: {e}")
+        return 0
