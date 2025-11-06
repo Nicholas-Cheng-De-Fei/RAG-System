@@ -2,7 +2,8 @@ from fastapi import HTTPException
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_pymupdf4llm import PyMuPDF4LLMLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter
 import numpy as np
 from pathlib import Path
 import re
@@ -33,6 +34,26 @@ def read_pdf_document(document_path: str) -> list:
         log.error(f"File path {document_path} is invalid or the file cannot be found")
         raise HTTPException(status_code=400, detail="Invalid file path or file cannot be found")
     
+def read_pdf_document_into_markdown(document_path: str) -> str:
+    """
+    Reads the PDF document based on the document path and converts it into markdown format.
+
+    Returns
+    -------
+    A string containing the markdown representation of the PDF.
+    """
+    path = Path(document_path)
+
+    # If the path is not absolute, make it absolute
+    if (not path.is_absolute()):
+        path = path.resolve()
+    try:
+        loader = PyMuPDF4LLMLoader(str(path))
+        return loader.load()
+    except ValueError as value_err:
+        log.error(f"File path {document_path} is invalid or the file cannot be found")
+        raise HTTPException(status_code=400, detail="Invalid file path or file cannot be found")
+
 def native_chunking(documents: list) -> list:
     """
     Spilts the text into multiple chunks based on the natural structure such as breakpoints, new lines etc.
@@ -132,7 +153,7 @@ def semantic_chunking(documents: list, max_sentences_per_chunk: int = 6) -> list
     Returns
     -------
     Returns a list of documents but are smaller in text length than the original document list.
-    """
+    """        
     combined_text = "\n".join(getattr(document, "page_content", str(document))
                                for document in documents)
     if not combined_text.strip():
@@ -163,7 +184,7 @@ def semantic_chunking(documents: list, max_sentences_per_chunk: int = 6) -> list
 
     # We need to get the distance threshold that we'll consider an outlier
     # We'll use numpy .percentile() for this
-    breakpoint_percentile_threshold = 80
+    breakpoint_percentile_threshold = 60
     breakpoint_distance_threshold = np.percentile(distances, breakpoint_percentile_threshold) # If you want more chunks, lower the percentile cutoff
 
     # Then we'll get the index of the distances that are above the threshold. This will tell us where we should split our text
@@ -213,3 +234,52 @@ def semantic_chunking(documents: list, max_sentences_per_chunk: int = 6) -> list
         print ("\n")
         
     return [Document(page_content=chunk) for chunk in chunks]
+
+## LAYOUT CHUNKING
+
+def layout_chunking(documents: list) -> list:
+    """
+    Spilts the text into multiple chunks based on layout structure.
+
+    Returns
+    -------
+    Returns a list of documents but are smaller in text length than the original document list.
+    """
+    # Placeholder for layout-based chunking logic
+    # This would typically involve analyzing the document's layout elements
+    combined_text = "\n".join(getattr(document, "page_content", str(document))
+                               for document in documents)
+    if not combined_text.strip():
+        # Handle cases with no text content
+        return []
+
+    processed_text = re.sub(r'\n\*\*(\d\.\d)\*\*([^\n]+)', r'\n## \1\2', combined_text)
+    processed_text = re.sub(r'\n\*\*(\d)\*\*([^\n]+)', r'\n# \1\2', processed_text)
+
+    log.info(f"Document page content preview: {combined_text[:500]}")
+
+    headers_to_split_on = [
+        ("#", "Header 1"),
+        ("##", "Header 2"),
+        ("###", "Header 3"),
+    ]
+
+    markdown_splitter = MarkdownHeaderTextSplitter(
+        headers_to_split_on=headers_to_split_on,
+        strip_headers=False
+    )
+    
+    log.info("Chunking based on layout structure has begun")
+    
+    start = time.perf_counter()
+    
+    final_structured_documents = markdown_splitter.split_text(processed_text)
+    
+    end = time.perf_counter()
+    log.info(f"Chunking process completed, took {end - start:.4f} seconds")
+    
+    for document in final_structured_documents:
+        log.info(f"Layout-based chunk preview: {document.page_content}")
+    log.info(f"Number of layout-based chunks created: {len(final_structured_documents)}")
+    
+    return final_structured_documents
