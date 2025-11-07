@@ -3,7 +3,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from models.app_models import DocumentProcessRequest, QueryRequest
 
 from services.document_chunking import layout_chunking, read_pdf_document, native_chunking, read_pdf_document_into_markdown, semantic_chunking
-from services.chroma_db_service import embed_and_add_document, retrieve
+from services.chroma_db_service import embed_and_add_document, multi_retrieve
 
 from services.query_service import query_google_ai
 from services.reranking import rerank

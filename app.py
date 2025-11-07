@@ -1,7 +1,7 @@
 from controllers.app_controller import chunk_document, chunk_document_semantically, chunk_document_with_layout, query_ai_model, retrieve_and_query_ai_model
 from fastapi import FastAPI
 from models.app_models import DocumentProcessRequest, QueryRequest
-from services.chroma_db_service import connect_to_chroma_db, disconnect_chroma_db
+from services.chroma_db_service import connect_to_chroma_db, disconnect_chroma_db, get_document_count
 from services.query_service import connect_to_google_ai
 from utils.logger import log
 
