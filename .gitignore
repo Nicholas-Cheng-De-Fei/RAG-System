@@ -13,3 +13,6 @@ wheels/
 
 # Environments
 .env
+
+# Temp files
+temp/
