@@ -253,10 +253,20 @@ def layout_chunking(documents: list) -> list:
         # Handle cases with no text content
         return []
 
-    processed_text = re.sub(r'\n\*\*(\d\.\d)\*\*([^\n]+)', r'\n## \1\2', combined_text)
-    processed_text = re.sub(r'\n\*\*(\d)\*\*([^\n]+)', r'\n# \1\2', processed_text)
+    # --- REGEX CONVERSIONS ---
+    # NOTE: The order is important. Go from most specific to most general.
+
+    # 1. Handles formats like **1.2**Title and also ** 1.2 ** Title
+    processed_text = re.sub(r'\n\*\*\s*(\d\.\d)\s*\*\*\s*([^\n]+)', r'\n## \1 \2', combined_text)
+
+    # 2. Handles formats like **1**Title and also ** 1 ** Title
+    processed_text = re.sub(r'\n\*\*\s*(\d)\s*\*\*\s*([^\n]+)', r'\n# \1 \2', processed_text)
+
+    # 3. Handle any other bolded titles without numbers like **Introduction**
+    processed_text = re.sub(r'\n\*\*\s*(.+?)\s*\*\*', r'\n# \1', processed_text)
 
     log.info(f"Document page content preview: {combined_text[:500]}")
+    log.info("\n\n\n")
 
     headers_to_split_on = [
         ("#", "Header 1"),
