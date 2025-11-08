@@ -75,6 +75,7 @@ def clean_text(text: str) -> str:
     text = re.sub(r"http\S+|www\.\S+", "", text)      # remove URLs
     text = re.sub(r"\[[0-9]*\]", "", text)            # remove citation marks [1], [2]
     text = re.sub(r"\s+", " ", text)                  # collapse multiple spaces/newlines
+    text = text.replace("\u2212", "-")
     text = re.sub(r"[^\x20-\x7E]", "", text)          # remove non-ASCII characters
     return text.strip()
 
@@ -289,8 +290,10 @@ def layout_chunking(documents: list) -> list:
     # 3. Handle any other bolded titles without numbers like **Introduction**
     processed_text = re.sub(r'\n\*\*\s*(.+?)\s*\*\*', r'\n# \1', processed_text)
 
-    log.info(f"Document page content preview: {combined_text[:500]}")
-    log.info("\n\n\n")
+    processed_text = processed_text.encode("utf-8", errors="replace").decode()
+
+    # log.info(f"Document page content preview: {combined_text[:500]}")
+    # log.info("\n\n\n")
 
     headers_to_split_on = [
         ("#", "Header 1"),
@@ -312,8 +315,9 @@ def layout_chunking(documents: list) -> list:
     end = time.perf_counter()
     log.info(f"Chunking process completed, took {end - start:.4f} seconds")
     
-    for document in final_structured_documents:
-        log.info(f"Layout-based chunk preview: {document.page_content}")
+    # Uncomment this to see all the chunks
+    # for document in final_structured_documents:
+    #     log.info(f"Layout-based chunk preview: {document.page_content}")
     log.info(f"Number of layout-based chunks created: {len(final_structured_documents)}")
     
     return final_structured_documents
