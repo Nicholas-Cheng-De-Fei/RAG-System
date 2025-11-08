@@ -1,4 +1,4 @@
-from controllers.app_controller import chunk_document, query_ai_model, retrieve_and_query_ai_model
+from controllers.app_controller import chunk_document, chunk_document_semantically, chunk_document_with_layout, query_ai_model, retrieve_and_query_ai_model
 from fastapi import FastAPI
 from models.app_models import DocumentProcessRequest, QueryRequest
 from services.chroma_db_service import connect_to_chroma_db, disconnect_chroma_db, get_document_count
@@ -35,6 +35,22 @@ async def chunk_pdf_document(process_request: DocumentProcessRequest) -> dict:
     """
     chunk_document(process_request, app.state.chroma_db)
     get_document_count(app.state.chroma_db)
+    return {"message": "Document has been chunked"}
+
+@app.post("/chunk/pdf/semantic")
+async def chunk_pdf_document_semantically(process_request: DocumentProcessRequest) -> dict:
+    """
+    Takes in a PDF document locally and chunks it.
+    """
+    chunk_document_semantically(process_request, app.state.chroma_db)
+    return {"message": "Document has been chunked"}
+
+@app.post("/chunk/pdf/layout")
+async def chunk_pdf_document_with_layout(process_request: DocumentProcessRequest) -> dict:
+    """
+    Takes in a PDF document locally and chunks it using layout-aware chunking.
+    """
+    chunk_document_with_layout(process_request, app.state.chroma_db)
     return {"message": "Document has been chunked"}
 
 @app.post("/ask")
