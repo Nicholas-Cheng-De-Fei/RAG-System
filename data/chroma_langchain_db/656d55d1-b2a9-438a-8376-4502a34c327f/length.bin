@@ -1,0 +1,5 @@
+## 3.3 **Performance by Document Size**  
+Analysis by document size reveals important scalability characteristics. For small notes (10K tokens),  
+CLEAR won 3/4 cases (75% win rate). For medium notes (42K tokens), CLEAR won 2/4 cases (50%  
+win rate). Most significantly, for large notes (65K+ tokens), CLEAR won 3/4 cases (75% win rate),  
+demonstrating superior scalability compared to baseline met
