@@ -1,8 +1,9 @@
-from controllers.app_controller import chunk_document, chunk_document_semantically, chunk_document_with_layout, query_ai_model, retrieve_and_query_ai_model
+from controllers.app_controller import chunk_document, chunk_document_semantically, chunk_document_with_layout, query_ai_model, retrieve_and_query_ai_model, evaluate_model, preload_chroma_db
 from fastapi import FastAPI
 from models.app_models import DocumentProcessRequest, QueryRequest
 from services.chroma_db_service import connect_to_chroma_db, disconnect_chroma_db, get_document_count
 from services.query_service import connect_to_google_ai
+from evaluation.evaluations import connect_to_groq_ai
 from utils.logger import log
 
 async def lifespan(app: FastAPI):
@@ -13,8 +14,10 @@ async def lifespan(app: FastAPI):
     log.info("Backend server starting up")
     app.state.chroma_db = connect_to_chroma_db()
     app.state.google_ai = connect_to_google_ai()
+    app.state.groq_ai = connect_to_groq_ai()
+    
     yield
-    # Anything after yeild is for teardown / cleanup
+    # Anything after yield is for teardown / cleanup
     log.warning("Disconnecting from chroma DB")
     disconnect_chroma_db(app.state.chroma_db )
     log.warning("Backend server shutting down")
@@ -66,3 +69,11 @@ async def rag_query_ai_model(request: QueryRequest) -> dict:
     Retrieves and queries the model.
     """
     return retrieve_and_query_ai_model(request, app.state.google_ai, app.state.chroma_db)
+
+@app.post("/evaluate")
+async def evaluate():
+    return evaluate_model(app.state.google_ai, app.state.groq_ai)
+
+@app.post("/evaluate/preload")
+async def preload():
+    return preload_chroma_db()
