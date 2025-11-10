@@ -75,16 +75,16 @@ def retrieve_and_query_ai_model(request: QueryRequest, google_ai: ChatGoogleGene
 def evaluate_model(google_ai: ChatGoogleGenerativeAI, groq_ai: ChatGroq):  
     from evaluation.eval_models import base_chunk_base_retrieve, base_chunk_multi_retrieve, base_chunk_rerank, layout_chunk_base_retrieve, layout_chunk_multi_retrieve
     # Test base chunk + base retrieve
-    base_results = base_chunk_base_retrieve(google_ai, groq_ai)
+    # base_results = base_chunk_base_retrieve(google_ai, groq_ai)
     
     # Test base chunk + multi retrieve
-    query_transformation_results = base_chunk_multi_retrieve(google_ai, groq_ai) 
+    # query_transformation_results = base_chunk_multi_retrieve(google_ai, groq_ai) 
     
     # Test base chunk + reranking
-    base_chunk_rerank_results = base_chunk_rerank(google_ai, groq_ai)
+    # base_chunk_rerank_results = base_chunk_rerank(google_ai, groq_ai)
     
     # Test layout chunk + base retrieve
-    layout_chunk_base_retrieve_results = layout_chunk_base_retrieve(google_ai, groq_ai)
+    # layout_chunk_base_retrieve_results = layout_chunk_base_retrieve(google_ai, groq_ai)
     
     # Test layout chunk + multi retrieve
     layout_chunk_multi_retrieve_results = layout_chunk_multi_retrieve(google_ai, groq_ai)
