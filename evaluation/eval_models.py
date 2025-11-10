@@ -20,6 +20,7 @@ def base_chunk_base_retrieve(google_ai: ChatGoogleGenerativeAI, groq_ai: ChatGro
     evaluation_data = []
     
     for i in range(len_questions):
+        i=5
         file, file_path, question, ground_truth = get_question(i)
         log.info(f"{model} model: evaluating question {i+1}") 
         
@@ -47,6 +48,7 @@ def base_chunk_base_retrieve(google_ai: ChatGoogleGenerativeAI, groq_ai: ChatGro
             "faithfulness_score": faithfulness_score,
             "model_tested": model
         })
+        break
         
     log.info(f"{model} model results: {result}")
     evaluation_data.insert(0, result)
@@ -64,6 +66,7 @@ def base_chunk_multi_retrieve(google_ai: ChatGoogleGenerativeAI, groq_ai: ChatGr
     evaluation_data = []
     
     for i in range(len_questions):
+        i=5
         file, file_path, question, ground_truth = get_question(i)
         log.info(f"{model} model: evaluating question {i+1}") 
         
@@ -94,6 +97,7 @@ def base_chunk_multi_retrieve(google_ai: ChatGoogleGenerativeAI, groq_ai: ChatGr
             "faithfulness_score": faithfulness_score,
             "model_tested": model
         })
+        break
     
     log.info(f"{model} model results: {result}")
     evaluation_data.insert(0, result)
@@ -110,6 +114,7 @@ def base_chunk_rerank(google_ai: ChatGoogleGenerativeAI, groq_ai: ChatGroq):
     evaluation_data = []
     
     for i in range(len_questions):
+        i=5
         file, file_path, question, ground_truth = get_question(i)        
         log.info(f"{model} model: evaluating question {i+1}") 
                   
@@ -150,6 +155,8 @@ def base_chunk_rerank(google_ai: ChatGoogleGenerativeAI, groq_ai: ChatGroq):
             "faithfulness_score": faithfulness_score,
             "model_tested": model
         })
+        break
+    
     
     log.info(f"{model} model results: {result}")
     evaluation_data.insert(0, result)
@@ -165,8 +172,8 @@ def layout_chunk_base_retrieve(google_ai: ChatGoogleGenerativeAI, groq_ai: ChatG
     model = "Layout"
     evaluation_data = []
     
-    for i in range(len_questions):
-        i = 3
+    # for i in range(len_questions):
+    for i in [5,6]:
         file, file_path, question, ground_truth = get_question(i)        
         log.info(f"{model} model: evaluating question {i+1}") 
                 
@@ -208,7 +215,6 @@ def layout_chunk_base_retrieve(google_ai: ChatGoogleGenerativeAI, groq_ai: ChatG
             })
         finally:
             break
-        
 
     log.info(f"{model} model results: {result}")
     evaluation_data.insert(0, result)
@@ -225,7 +231,7 @@ def layout_chunk_multi_retrieve(google_ai: ChatGoogleGenerativeAI, groq_ai: Chat
     evaluation_data = []
     
     for i in range(len_questions):
-        i = 5
+        i=5
         file, file_path, question, ground_truth = get_question(i)        
         log.info(f"{model} model: evaluating question {i+1}") 
         
@@ -236,7 +242,7 @@ def layout_chunk_multi_retrieve(google_ai: ChatGoogleGenerativeAI, groq_ai: Chat
                 db_name = f"layout-{file}"
             db = connect_to_chroma_db(db_name)
             queries = query_transformation(question, google_ai)
-            context = multi_retrieve(queries, db, k=10)
+            context = multi_retrieve(queries, db, k=5)
             
             if context: # Only proceed if the context list is not empty
                 # Find the longest string (document) in the context list
@@ -260,7 +266,13 @@ def layout_chunk_multi_retrieve(google_ai: ChatGoogleGenerativeAI, groq_ai: Chat
                     log.warning("Longest context string was not found for removal.")
                     
                 
-            
+            if (context):
+                documents = [getattr(doc, "page_content", str(doc)) for doc in context]
+                reranked_context = rerank(question, documents)
+            else:
+                reranked_context = ["No relevant documents retrieved"]
+
+            context = "\n\n".join(reranked_context)
             query_with_context = f"Context:\n{context}\n\nQuestion:\n{question}"
             response = query_google_ai(query_with_context, google_ai)
             generated_answer = response["response"].content
