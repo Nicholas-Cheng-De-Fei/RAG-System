@@ -20,4 +20,5 @@ dependencies = [
     "sentence-transformers>=5.1.2",
     "streamlit>=1.51.0",
     "typing>=3.10.0.0",
+    "langchain-groq>=1.0.0",
 ]

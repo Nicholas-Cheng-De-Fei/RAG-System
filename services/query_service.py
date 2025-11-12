@@ -90,7 +90,5 @@ def query_transformation(query:str, google_ai: ChatGoogleGenerativeAI) -> list:
     
     end = time.perf_counter()
     log.info(f"Response received, took {end - start:.4f} seconds")
-    
-    print(response.content.split('\n'))
-    
+        
     return response.content.split('\n')
