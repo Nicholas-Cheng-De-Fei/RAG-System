@@ -33,6 +33,19 @@ SYSTEM_PROMPT = """
     Friendly, approachable, and encouraging — like a helpful tutor.
 """
 
+TEST_PROMPT = """
+    You are an intelligent and patient study assistant designed to help students understand their course notes.
+    IMPORTANT: do not use any RAG tools such as online search. Answer the given query with only your pre-trained data and knowledge.
+    
+        IMPORTANT, Response format:
+    - **Answer:** Give the main explanation clearly.
+    - **Key Points/Summary:** List 2–4 concise bullet points summarizing the answer.
+    - **Extra Tip (if relevant):** Add a short clarification, example, or analogy to help understanding.
+    
+    Tone:
+    Friendly, approachable, and encouraging — like a helpful tutor.
+"""
+
 query_transformation_prompt = '''
     You are an AI language model assistant. Your task is to generate five 
     different versions of the given user question to retrieve relevant documents from a vector 
@@ -77,6 +90,21 @@ def query_google_ai(query: str, google_ai: ChatGoogleGenerativeAI) -> dict:
 
     return {"query" : query, "response": response}
 
+def query_google_ai_test(query: str, google_ai: ChatGoogleGenerativeAI) -> dict:
+    messages = [
+        SystemMessage(content=TEST_PROMPT),
+        HumanMessage(content=query)
+    ]
+    log.info("Awaiting response from AI model")
+    start = time.perf_counter()
+    
+    response = google_ai.invoke(messages)
+
+    end = time.perf_counter()
+    log.info(f"Response received, took {end - start:.4f} seconds")
+
+    return {"query" : query, "response": response}
+    
 def query_transformation(query:str, google_ai: ChatGoogleGenerativeAI) -> list:
     messages = [
         SystemMessage(content = query_transformation_prompt),
@@ -90,7 +118,5 @@ def query_transformation(query:str, google_ai: ChatGoogleGenerativeAI) -> list:
     
     end = time.perf_counter()
     log.info(f"Response received, took {end - start:.4f} seconds")
-    
-    print(response.content.split('\n'))
-    
+        
     return response.content.split('\n')

@@ -3,12 +3,12 @@ from services.document_chunking import get_embedding_model
 import time
 from utils.logger import log
 
-def connect_to_chroma_db() -> Chroma:
+def connect_to_chroma_db(name:str = "document_store") -> Chroma:
     """
     Establishes a connection with chroma database.
     """
     vector_store = Chroma(
-        collection_name="document_store",
+        collection_name=name,
         embedding_function= get_embedding_model(),
         persist_directory="./data/chroma_langchain_db",  # Where to save data locally, remove if not necessary
     )
@@ -33,7 +33,30 @@ def embed_and_add_document(documents: list, chroma_db: Chroma) -> None:
     
     end = time.perf_counter()
     log.info(f"INFO: Embedding process completed and has been stored into chroma database, took {end - start:.4f} seconds")
-        
+
+def retrieve(query: str, chroma_db: Chroma, k: int = 10) -> dict:
+    """
+    Retrieves the top k most relevent documents based on the query.
+    """
+    retrieved_docs = chroma_db.similarity_search(query, k = k)
+    
+    if not retrieved_docs:
+        print("no")
+        return {"context": "No relevant documents found"}
+    else:
+        return {"context": "\n\n".join(getattr(doc, "page_content", str(doc)) for doc in retrieved_docs)}
+
+def rerank_retrieve(query: str, chroma_db: Chroma, k: int = 10) -> list:
+    """
+    Retrieves the top k most relevant documents and returns them as a 
+    list of raw LangChain Document objects, suitable for reranking.
+    """
+    # Perform the similarity search
+    retrieved_docs = chroma_db.similarity_search(query, k=k)
+    
+    # Return the raw list of document objects
+    return retrieved_docs
+
 def multi_retrieve(queries: list, chroma_db: Chroma, k: int = 20) -> list:
     """
     Retrieves the top k most relevent documents based on the query.
